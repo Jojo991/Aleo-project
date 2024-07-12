@@ -1,0 +1,29 @@
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl-util/0.15.0/tweetnacl-util.min.js"></script>
+</head>
+<body>
+  <h1>Signed Message</h1>
+  <button onclick="getSignedMessage()">Get Signed Message</button>
+  <pre id="output"></pre>
+
+  <script>
+    async function getSignedMessage() {
+      try {
+        const privateKey = 'APrivateKey1zkpEFQb3ftAJDQdecWsFAxeSN4rFQsbLqbWC8GkFTVhxeN1';
+        const message = 'Aleo 1st project';
+
+        const messageBytes = tweetnacl.util.decodeUTF8(message);
+        const signature = nacl.sign.detached(messageBytes, tweetnacl.util.decodeBase64(privateKey));
+        const signatureHex = tweetnacl.util.encodeHex(signature);
+
+        document.getElementById('output').textContent = 'Signed Message: ' + signatureHex;
+      } catch (error) {
+        console.error('Error getting signed message:', error);
+        document.getElementById('output').textContent = 'Error: ' + error.message;
+      }
+    }
+  </script>
+</body>
+</html>
