@@ -1,7 +1,7 @@
+DOCTYPE html>
 <html>
 <head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl-util/0.15.0/tweetnacl-util.min.js"></script>
+  <title>Signed Message</title>
 </head>
 <body>
   <h1>Signed Message</h1>
@@ -11,15 +11,40 @@
   <script>
     async function getSignedMessage() {
       try {
-        const privateKey = 'APrivateKey1zkpEFQb3ftAJDQdecWsFAxeSN4rFQsbLqbWC8GkFTVhxeN1';
+        // Define the private key in Base64 format
+        const privateKeyBase64 = 'APrivateKey1zkpEFQb3ftAJDQdecWsFAxeSN4rFQsbLqbWC8GkFTVhxeN1';
+
+        // Decode the Base64 private key to a byte array
+        const privateKeyBytes = Uint8Array.from(atob(privateKeyBase64), c => c.charCodeAt(0));
+
+        // Import the private key for use with the HMAC algorithm
+        const privateKey = await crypto.subtle.importKey(
+          'raw',
+          privateKeyBytes,
+          { name: 'HMAC', hash: 'SHA-256' },
+          false,
+          ['sign']
+        );
+
+        // Define the message to be signed
         const message = 'Aleo 1st project';
 
-        const messageBytes = tweetnacl.util.decodeUTF8(message);
-        const signature = nacl.sign.detached(messageBytes, tweetnacl.util.decodeBase64(privateKey));
-        const signatureHex = tweetnacl.util.encodeHex(signature);
+        // Encode the message into a byte array
+        const encoder = new TextEncoder();
+        const messageBytes = encoder.encode(message);
 
+        // Sign the message
+        const signature = await crypto.subtle.sign('HMAC', privateKey, messageBytes);
+
+        // Convert the signature to a hexadecimal string
+        const signatureHex = Array.from(new Uint8Array(signature))
+          .map(byte => byte.toString(16).padStart(2, '0'))
+          .join('');
+
+        // Display the signed message in the <pre> element
         document.getElementById('output').textContent = 'Signed Message: ' + signatureHex;
       } catch (error) {
+        // Handle and display any errors that occur
         console.error('Error getting signed message:', error);
         document.getElementById('output').textContent = 'Error: ' + error.message;
       }
